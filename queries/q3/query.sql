@@ -7,8 +7,8 @@ SELECT
     END - 0.225) / 0.45 AS BIGINT) * 0.45 + 0.225 AS x,
   COUNT(*) AS y
 FROM {input_table}
-CROSS JOIN UNNEST(Jet) AS j
-WHERE abs(eta) < 1
+CROSS JOIN UNNEST(Jet) AS _j(j)
+WHERE abs(j.eta) < 1
 GROUP BY CAST((
     CASE
       WHEN j.pt < 15 THEN 15

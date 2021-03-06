@@ -1,13 +1,9 @@
 WITH temp AS (
   SELECT event, MET.sumet, COUNT(*)
   FROM {input_table}
-  CROSS JOIN UNNEST(Muon) WITH ORDINALITY
-    AS m1 (pt, eta, phi, mass, charge, pfRelIso03_all, pfRelIso04_all, tightId,
-           softId, dxy, dxyErr, dz, dzErr, jetIdx, genPartIdx, idx)
-  CROSS JOIN UNNEST(Muon) WITH ORDINALITY
-    AS m2 (pt, eta, phi, mass, charge, pfRelIso03_all, pfRelIso04_all, tightId,
-           softId, dxy, dxyErr, dz, dzErr, jetIdx, genPartIdx, idx)
-  WHERE cardinality(Muon) > 1 AND m1.idx < m2.idx AND m1.charge <> m2.charge AND
+  CROSS JOIN UNNEST(Muon) WITH ORDINALITY AS _m1(m1, idx1)
+  CROSS JOIN UNNEST(Muon) WITH ORDINALITY AS _m2(m2, idx2)
+  WHERE cardinality(Muon) > 1 AND idx1 < idx2 AND m1.charge <> m2.charge AND
     SQRT(2 * m1.pt * m2.pt * (COSH(m1.eta - m2.eta) - COS(m1.phi - m2.phi))) > 60 AND
     SQRT(2 * m1.pt * m2.pt * (COSH(m1.eta - m2.eta) - COS(m1.phi - m2.phi))) < 120
   GROUP BY event, MET.sumet

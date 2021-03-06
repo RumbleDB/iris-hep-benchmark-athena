@@ -1,15 +1,11 @@
 -- Create the TriJet systems
 WITH tri_jets AS (
-  SELECT
-    event,
-    CAST( ROW( m1.pt, m1.eta, m1.phi, m1.mass, m1.btag ) AS ROW( pt REAL, eta REAL, phi REAL, mass REAL, btag REAL ) ) AS m1,
-    CAST( ROW( m2.pt, m2.eta, m2.phi, m2.mass, m2.btag ) AS ROW( pt REAL, eta REAL, phi REAL, mass REAL, btag REAL ) ) AS m2,
-    CAST( ROW( m3.pt, m3.eta, m3.phi, m3.mass, m3.btag ) AS ROW( pt REAL, eta REAL, phi REAL, mass REAL, btag REAL ) ) AS m3
+  SELECT event, m1, m2, m3
   FROM {input_table}
-  CROSS JOIN UNNEST(Jet) WITH ORDINALITY AS m1 (pt, eta, phi, mass, puId, btag, idx)
-  CROSS JOIN UNNEST(Jet) WITH ORDINALITY AS m2 (pt, eta, phi, mass, puId, btag, idx)
-  CROSS JOIN UNNEST(Jet) WITH ORDINALITY AS m3 (pt, eta, phi, mass, puId, btag, idx)
-  WHERE m1.idx < m2.idx AND m2.idx < m3.idx
+  CROSS JOIN UNNEST(Jet) WITH ORDINALITY AS _m1(m1, idx1)
+  CROSS JOIN UNNEST(Jet) WITH ORDINALITY AS _m2(m2, idx2)
+  CROSS JOIN UNNEST(Jet) WITH ORDINALITY AS _m2(m3, idx3)
+  WHERE idx1 < idx2 AND idx2 < idx3
 ),
 
 

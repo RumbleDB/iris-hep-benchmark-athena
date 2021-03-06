@@ -24,19 +24,19 @@ lepton_pairs AS (
     *,
     CAST(
       ROW(
-        pt1 * cos(phi1) + pt2 * cos(phi2),
-        pt1 * sin(phi1) + pt2 * sin(phi2),
-        pt1 * ( ( exp(eta1) - exp(-eta1) ) / 2.0 ) + pt2 * ( ( exp(eta2) - exp(-eta2) ) / 2.0 ),
-        pt1 * cosh(eta1) * pt1 * cosh(eta1) * pt1 + mass1 * mass1 + pt2 * cosh(eta2) * pt2 * cosh(eta2) * pt2 + mass2 * mass2
+        l1.pt * cos(l1.phi) + l2.pt * cos(l2.phi),
+        l1.pt * sin(l1.phi) + l2.pt * sin(l2.phi),
+        l1.pt * ( ( exp(l1.eta) - exp(-l1.eta) ) / 2.0 ) + l2.pt * ( ( exp(l2.eta) - exp(-l2.eta) ) / 2.0 ),
+        l1.pt * cosh(l1.eta) * l1.pt * cosh(l1.eta) * l1.pt + l1.mass * l1.mass + l2.pt * cosh(l2.eta) * l2.pt * cosh(l2.eta) * l2.pt + l2.mass * l2.mass
       ) AS
       ROW (x REAL, y REAL, z REAL, e REAL)
     ) AS l,
     idx1 AS l1_idx,
     idx2 AS l2_idx
   FROM uniform_structure_leptons
-  CROSS JOIN UNNEST(Leptons) WITH ORDINALITY AS l1 (pt1, eta1, phi1, mass1, charge1, type1, idx1)
-  CROSS JOIN UNNEST(Leptons) WITH ORDINALITY AS l2 (pt2, eta2, phi2, mass2, charge2, type2, idx2)
-  WHERE idx1 < idx2 AND type1 = type2 AND charge1 != charge2
+  CROSS JOIN UNNEST(Leptons) WITH ORDINALITY AS _l1(l1, idx1)
+  CROSS JOIN UNNEST(Leptons) WITH ORDINALITY AS _l2(l2, idx2)
+  WHERE idx1 < idx2 AND l1.type = l2.type AND l1.charge != l2.charge
 ),
 
 
@@ -61,10 +61,10 @@ processed_pairs AS (
 
 -- For each event get the max pt of the other leptons
 other_max_pt AS (
-  SELECT event, CAST(max_by(2 * system[4] * pt * (1.0 - cos((system[5]- phi + pi()) % (2 * pi()) - pi())), pt) AS REAL) AS pt
+  SELECT event, CAST(max_by(2 * system.field3 * l.pt * (1.0 - cos((system.field4- l.phi + pi()) % (2 * pi()) - pi())), l.pt) AS REAL) AS pt
   FROM processed_pairs
-  CROSS JOIN UNNEST(system[3]) WITH ORDINALITY AS l (pt, eta, phi, mass, charge, type, idx)
-  WHERE idx != system[1] AND idx != system[2]
+  CROSS JOIN UNNEST(system.field2) WITH ORDINALITY AS _l(l, idx)
+  WHERE idx != system.field0 AND idx != system.field1
   GROUP BY event
 )
 

@@ -9,6 +9,7 @@ import time
 
 import pandas as pd
 import pyathena
+from pyathena.pandas.util import as_pandas
 import pytest
 
 
@@ -42,11 +43,32 @@ def test_query(query_id, pytestconfig):
     )
 
     start_timestamp = time.time()
-    df = pd.read_sql(query, connection)
+    result = connection.cursor().execute(query)
     end_timestamp = time.time()
 
-    running_time = end_timestamp - start_timestamp
-    logging.info('Running time: {:.2f}s'.format(running_time))
+    # Trace statistics
+    client_time = end_timestamp - start_timestamp
+    server_time = \
+        (result.completion_date_time - result.submission_date_time) \
+        .total_seconds()
+    data_scanned_mb = result.data_scanned_in_bytes / 10**6
+    engine_time = result.engine_execution_time_in_millis / 1000
+    service_time = result.service_processing_time_in_millis / 1000
+    planning_time = result.query_planning_time_in_millis / 1000
+    queue_time = result.query_queue_time_in_millis / 1000
+    total_time = result.total_execution_time_in_millis / 1000
+
+    logging.info('Query ID: {}'.format(result.query_id))
+    logging.info('Client time: {:.2f}s'.format(client_time))
+    logging.info('Server time: {:.2f}s'.format(server_time))
+    logging.info('Data scanned: {:.2f}MB'.format(data_scanned_mb))
+    logging.info('Engine time: {:.2f}s'.format(engine_time))
+    logging.info('Service time: {:.2f}s'.format(service_time))
+    logging.info('Planning time: {:.2f}s'.format(planning_time))
+    logging.info('Queue time: {:.2f}s'.format(queue_time))
+    logging.info('Total time: {:.2f}s'.format(total_time))
+
+    df = as_pandas(result)
 
     # Freeze reference result
     if pytestconfig.getoption('freeze_result'):

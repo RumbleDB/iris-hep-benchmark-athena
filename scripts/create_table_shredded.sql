@@ -1,11 +1,4 @@
--- Create a schema which will hold our database
-CREATE SCHEMA IF NOT EXISTS memory.cern;
-
--- Drop the table if it already exists
-DROP TABLE IF EXISTS memory.cern.Run2012B_SingleMu_small;
-
--- Creates the `Run2012B_SingleMu_small` table
-CREATE TABLE memory.cern.Run2012B_SingleMu_small (
+CREATE EXTERNAL TABLE {tablename} (
     run                     INT,
     luminosityBlock         BIGINT,
     event                   BIGINT,
@@ -92,4 +85,6 @@ CREATE TABLE memory.cern.Run2012B_SingleMu_small (
     Jet_mass                ARRAY<FLOAT>,
     Jet_puId                ARRAY<BOOLEAN>,
     Jet_btag                ARRAY<FLOAT>
-);
+)
+STORED AS PARQUET
+LOCATION '{location}';

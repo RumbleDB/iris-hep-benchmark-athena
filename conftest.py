@@ -7,17 +7,18 @@ def pytest_addoption(parser):
   parser.addoption('-F', '--freeze-result', action='store', default=False,
                    help='Whether the results of the query should be '
                         'persisted to disk.')
+  parser.addoption('--plot-histogram', action='store_true', default=False,
+                   help='Plot resulting histogram as PNG file.')
   parser.addoption('-N', '--num-events', action='store', default=1000,
                    help='Number of events taken from the input file. '
                         'This influences which reference file should be '
                         'taken.')
+  parser.addoption('-S', '--staging-dir', action='store',
+                   help='Directory on S3 used as output location by Athena.')
+  parser.addoption('-P', '--database', action='store',
+                   help='Name of the schema ("database") in Athena.')
   parser.addoption('-I', '--input-table', action='store',
                    help='Name of input table or view.')
-  parser.addoption('-P', '--presto-cmd', action='store',
-                   default="scripts/run_presto.sh",
-                   help='Path to the script which sets up the DB.')
-  parser.addoption('--plot-histogram', action='store_true', default=False,
-                   help='Plot resulting histogram as PNG file.')
 
 
 def find_queries():

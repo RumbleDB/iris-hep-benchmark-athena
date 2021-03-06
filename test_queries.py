@@ -1,58 +1,23 @@
 #!/usr/bin/env python3
 
-from abc import ABC, abstractmethod
-import io
-import json
 import logging
 from matplotlib import pyplot as plt
 import numpy as np
 from os.path import dirname, join
-import subprocess
 import sys
 import time
 
 import pandas as pd
+import pyathena
 import pytest
-import requests
-from urllib.parse import quote_plus, urlencode
-import warnings
 
 
-# This superclass might be useful in case other means
-# of querying Presto are added in the future
-class PrestoProxy(ABC):
-  @abstractmethod
-  def run(self, query_file, other_params):
-    pass
-
-
-class PrestoCliProxy(PrestoProxy):
-  def __init__(self, cmd):
-    self.cmd = cmd
-
-  def run(self, query):
-    # Assemble command
-    cmd = [self.cmd,
-           '--file', '/dev/stdin',
-           '--output-format', 'CSV_HEADER']
-
-    # Run query and read result
-    output = subprocess.check_output(cmd, encoding='utf-8', input=query)
-    return io.StringIO(output)
-
-
-@pytest.fixture(scope="function")
-def presto(pytestconfig):
-  # By default use the CLI
-  presto_cmd = pytestconfig.getoption('presto_cmd')
-  logging.info('Using executable %s', presto_cmd)
-  return PrestoCliProxy(presto_cmd)
-
-
-def test_query(query_id, pytestconfig, presto):
+def test_query(query_id, pytestconfig):
     num_events = pytestconfig.getoption('num_events')
     num_events = ('-' + str(num_events)) if num_events else ''
 
+    staging_dir = pytestconfig.getoption('staging_dir')
+    database = pytestconfig.getoption('database')
     input_table = pytestconfig.getoption('input_table')
     input_table = input_table or \
         'Run2012B_SingleMu{}'.format(num_events.replace('-','_'))
@@ -71,11 +36,14 @@ def test_query(query_id, pytestconfig, presto):
     )
 
     # Run query and read result
+    connection = pyathena.connect(
+        s3_staging_dir=staging_dir,
+        schema_name=database,
+    )
+
     start_timestamp = time.time()
-    output = presto.run(query)
+    df = pd.read_sql(query, connection)
     end_timestamp = time.time()
-    df = pd.read_csv(output, dtype= {'x': np.float64, 'y': np.int32})
-    print(df)
 
     running_time = end_timestamp - start_timestamp
     logging.info('Running time: {:.2f}s'.format(running_time))
@@ -86,7 +54,6 @@ def test_query(query_id, pytestconfig, presto):
 
     # Read reference result
     df_ref = pd.read_csv(ref_file, dtype= {'x': np.float64, 'y': np.int32})
-    print(df_ref)
 
     # Plot histogram
     if pytestconfig.getoption('plot_histogram'):
@@ -96,9 +63,13 @@ def test_query(query_id, pytestconfig, presto):
     # Normalize reference and query result
     df = df[df.y > 0]
     df = df[['x', 'y']]
+    df.x = df.x.astype(float)
+    df.y = df.y.astype(int)
     df.reset_index(drop=True, inplace=True)
     df_ref = df_ref[df_ref.y > 0]
     df_ref = df_ref[['x', 'y']]
+    df_ref.x = df_ref.x.astype(float)
+    df_ref.y = df_ref.y.astype(int)
     df_ref.reset_index(drop=True, inplace=True)
 
     # Assert correct result

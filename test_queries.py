@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 
 import logging
-from matplotlib import pyplot as plt
-import numpy as np
 from os.path import dirname, join
 import sys
 import time
 
+import matplotlib; matplotlib.use('Agg')
+from matplotlib import pyplot as plt
+import numpy as np
 import pandas as pd
 import pyathena
 from pyathena.pandas.util import as_pandas
+from pyathena.error import OperationalError
 import pytest
 
 
@@ -43,28 +45,34 @@ def test_query(query_id, pytestconfig):
     )
 
     start_timestamp = time.time()
-    result = connection.cursor().execute(query)
+    try:
+        result = connection.cursor().execute(query)
+    except pyathena.error.OperationalError as ex:
+        logging.error('Query failed (OperationalError).')
+        logging.error('Query ID: {}'.format(cursor.query_id))
+        raise ex
     end_timestamp = time.time()
 
     # Trace statistics
+    logging.info('Query ID: {}'.format(result.query_id))
+
     client_time = end_timestamp - start_timestamp
     server_time = \
         (result.completion_date_time - result.submission_date_time) \
         .total_seconds()
-    data_scanned_mb = result.data_scanned_in_bytes / 10**6
-    engine_time = result.engine_execution_time_in_millis / 1000
-    service_time = result.service_processing_time_in_millis / 1000
-    planning_time = result.query_planning_time_in_millis / 1000
-    queue_time = result.query_queue_time_in_millis / 1000
-    total_time = result.total_execution_time_in_millis / 1000
+    data_scanned_mb = (result.data_scanned_in_bytes or float('NaN')) / 10**6
+    engine_time = (result.engine_execution_time_in_millis or float('NaN')) / 1000
+    service_time = (result.service_processing_time_in_millis or float('NaN')) / 1000
+    planning_time = (result.query_planning_time_in_millis or float('NaN')) / 1000
+    queue_time = (result.query_queue_time_in_millis or float('NaN')) / 1000
+    total_time = (result.total_execution_time_in_millis or float('NaN')) / 1000
 
-    logging.info('Query ID: {}'.format(result.query_id))
     logging.info('Client time: {:.2f}s'.format(client_time))
     logging.info('Server time: {:.2f}s'.format(server_time))
     logging.info('Data scanned: {:.2f}MB'.format(data_scanned_mb))
     logging.info('Engine time: {:.2f}s'.format(engine_time))
     logging.info('Service time: {:.2f}s'.format(service_time))
-    logging.info('Planning time: {:.2f}s'.format(planning_time))
+    logging.info('Planning time: {:.2f}s'.format(planning_time or float("NaN")))
     logging.info('Queue time: {:.2f}s'.format(queue_time))
     logging.info('Total time: {:.2f}s'.format(total_time))
 

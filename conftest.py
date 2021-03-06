@@ -4,10 +4,10 @@ from os.path import dirname, join
 def pytest_addoption(parser):
   parser.addoption('-Q', '--query-id', action='append', default=[],
                    help='Folder name of query to run.')
-  parser.addoption('-F', '--freeze-result', action='store', default=False,
+  parser.addoption('-F', '--freeze-result', action='store_true',
                    help='Whether the results of the query should be '
                         'persisted to disk.')
-  parser.addoption('--plot-histogram', action='store_true', default=False,
+  parser.addoption('--plot-histogram', action='store_true',
                    help='Plot resulting histogram as PNG file.')
   parser.addoption('-N', '--num-events', action='store', default=1000,
                    help='Number of events taken from the input file. '

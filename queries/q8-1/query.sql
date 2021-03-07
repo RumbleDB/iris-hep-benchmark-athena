@@ -27,7 +27,7 @@ lepton_pairs AS (
         l1.pt * cos(l1.phi) + l2.pt * cos(l2.phi),
         l1.pt * sin(l1.phi) + l2.pt * sin(l2.phi),
         l1.pt * ( ( exp(l1.eta) - exp(-l1.eta) ) / 2.0 ) + l2.pt * ( ( exp(l2.eta) - exp(-l2.eta) ) / 2.0 ),
-        l1.pt * cosh(l1.eta) * l1.pt * cosh(l1.eta) * l1.pt + l1.mass * l1.mass + l2.pt * cosh(l2.eta) * l2.pt * cosh(l2.eta) * l2.pt + l2.mass * l2.mass
+        sqrt(l1.pt * cosh(l1.eta) * l1.pt * cosh(l1.eta) + l1.mass * l1.mass) + sqrt(l2.pt * cosh(l2.eta) * l2.pt * cosh(l2.eta) + l2.mass * l2.mass)
       ) AS
       ROW (x REAL, y REAL, z REAL, e REAL)
     ) AS l,
@@ -61,7 +61,7 @@ processed_pairs AS (
 
 -- For each event get the max pt of the other leptons
 other_max_pt AS (
-  SELECT event, CAST(max_by(2 * system.field3 * l.pt * (1.0 - cos((system.field4- l.phi + pi()) % (2 * pi()) - pi())), l.pt) AS REAL) AS pt
+  SELECT event, CAST(max_by(sqrt(2 * system.field3 * l.pt * (1.0 - cos((system.field4- l.phi + pi()) % (2 * pi()) - pi()))), l.pt) AS REAL) AS pt
   FROM processed_pairs
   CROSS JOIN UNNEST(system.field2) WITH ORDINALITY AS _l(l, idx)
   WHERE idx != system.field0 AND idx != system.field1

@@ -3,7 +3,10 @@ WITH temp AS (
   FROM {input_table}
   CROSS JOIN UNNEST(Muon) WITH ORDINALITY AS _m1(m1, idx1)
   CROSS JOIN UNNEST(Muon) WITH ORDINALITY AS _m2(m2, idx2)
-  WHERE cardinality(Muon) > 1 AND idx1 < idx2 AND m1.charge <> m2.charge AND
+  WHERE
+    cardinality(Muon) > 1 AND
+    idx1 < idx2
+    AND m1.charge <> m2.charge AND
     2 * m1.pt * m2.pt * (COSH(m1.eta - m2.eta) - COS(m1.phi - m2.phi)) BETWEEN 60 AND 120
   GROUP BY event, MET.sumet
   HAVING COUNT(*) > 0

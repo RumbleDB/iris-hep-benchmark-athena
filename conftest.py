@@ -13,6 +13,8 @@ def pytest_addoption(parser):
                    help='Number of events taken from the input file. '
                         'This influences which reference file should be '
                         'taken.')
+  parser.addoption('--work-group', action='store',
+                   help='Name of the work group to use for Athena.')
   parser.addoption('-S', '--staging-dir', action='store',
                    help='Directory on S3 used as output location by Athena.')
   parser.addoption('-P', '--database', action='store',

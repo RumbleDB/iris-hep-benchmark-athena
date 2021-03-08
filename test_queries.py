@@ -19,6 +19,7 @@ def test_query(query_id, pytestconfig):
     num_events = pytestconfig.getoption('num_events')
     num_events = ('-' + str(num_events)) if num_events else ''
 
+    work_group = pytestconfig.getoption('work_group')
     staging_dir = pytestconfig.getoption('staging_dir')
     database = pytestconfig.getoption('database')
     input_table = pytestconfig.getoption('input_table')
@@ -40,6 +41,7 @@ def test_query(query_id, pytestconfig):
 
     # Run query and read result
     connection = pyathena.connect(
+        work_group=work_group,
         s3_staging_dir=staging_dir,
         schema_name=database,
     )

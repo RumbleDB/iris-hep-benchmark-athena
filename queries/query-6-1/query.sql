@@ -45,9 +45,9 @@ singular_system AS (
   SELECT
     event,
     min_by(
-      ARRAY [m1, m2, m3],
+      sqrt(x2 + y2),
       abs(172.5 - sqrt(e2 - x2 - y2 - z2))
-    ) AS jet_system
+    ) AS tri_jet_pt
   FROM condensed_tri_jet
   GROUP BY event
 )
@@ -57,16 +57,16 @@ singular_system AS (
 SELECT
   FLOOR((
     CASE
-      WHEN jet.pt < 15 THEN 14.99
-      WHEN jet.pt > 40 THEN 40.01
-      ELSE jet.pt
+      WHEN tri_jet_pt < 15 THEN 14.99
+      WHEN tri_jet_pt > 40 THEN 40.01
+      ELSE tri_jet_pt
     END) / 0.25) * 0.25 + 0.125 AS x,
   COUNT(*) AS y
 FROM singular_system
 GROUP BY FLOOR((
     CASE
-      WHEN jet.pt < 15 THEN 14.99
-      WHEN jet.pt > 40 THEN 40.01
-      ELSE jet.pt
+      WHEN tri_jet_pt < 15 THEN 14.99
+      WHEN tri_jet_pt > 40 THEN 40.01
+      ELSE tri_jet_pt
     END) / 0.25) * 0.25 + 0.125
 ORDER BY x;

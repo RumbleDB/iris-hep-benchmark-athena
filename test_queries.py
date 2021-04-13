@@ -80,6 +80,13 @@ def test_query(query_id, pytestconfig):
 
     df = as_pandas(result)
 
+    # Normalize query result
+    df = df[df.y > 0]
+    df = df[['x', 'y']]
+    df.x = df.x.astype(float).round(6)
+    df.y = df.y.astype(int)
+    df.reset_index(drop=True, inplace=True)
+
     # Freeze reference result
     if pytestconfig.getoption('freeze_result'):
       df.to_csv(ref_file, index=False)
@@ -92,15 +99,10 @@ def test_query(query_id, pytestconfig):
       plt.hist(df.x, bins=len(df.index), weights=df.y)
       plt.savefig(png_file)
 
-    # Normalize reference and query result
-    df = df[df.y > 0]
-    df = df[['x', 'y']]
-    df.x = df.x.astype(float)
-    df.y = df.y.astype(int)
-    df.reset_index(drop=True, inplace=True)
+    # Normalize reference result
     df_ref = df_ref[df_ref.y > 0]
     df_ref = df_ref[['x', 'y']]
-    df_ref.x = df_ref.x.astype(float)
+    df_ref.x = df_ref.x.astype(float).round(6)
     df_ref.y = df_ref.y.astype(int)
     df_ref.reset_index(drop=True, inplace=True)
 

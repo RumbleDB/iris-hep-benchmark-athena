@@ -57,16 +57,16 @@ singular_system AS (
 SELECT
   CAST((
     CASE
-      WHEN btag < 0 THEN 0
-      WHEN btag > 1 THEN 1
+      WHEN btag < 0 THEN -0.005
+      WHEN btag > 1 THEN 1.005
       ELSE btag
     END - 0.005) / 0.01 AS BIGINT) * 0.01 + 0.005 AS x,
   COUNT(*) AS y
 FROM singular_system
 GROUP BY CAST((
     CASE
-      WHEN btag < 0 THEN 0
-      WHEN btag > 1 THEN 1
+      WHEN btag < 0 THEN -0.005
+      WHEN btag > 1 THEN 1.005
       ELSE btag
     END - 0.005) / 0.01 AS BIGINT) * 0.01 + 0.005
 ORDER BY x;

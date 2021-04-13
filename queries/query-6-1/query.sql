@@ -55,19 +55,18 @@ singular_system AS (
 
 -- Generate the histogram
 SELECT
-  CAST((
+  FLOOR((
     CASE
-      WHEN jet.pt < 15 THEN 15
-      WHEN jet.pt > 40 THEN 40
+      WHEN jet.pt < 15 THEN 14.99
+      WHEN jet.pt > 40 THEN 40.01
       ELSE jet.pt
-    END - 0.125) / 0.25 AS BIGINT) * 0.25 + 0.125 AS x,
+    END) / 0.25) * 0.25 + 0.125 AS x,
   COUNT(*) AS y
 FROM singular_system
-CROSS JOIN UNNEST(jet_system) AS _jet(jet)
-GROUP BY CAST((
+GROUP BY FLOOR((
     CASE
-      WHEN jet.pt < 15 THEN 15
-      WHEN jet.pt > 40 THEN 40
+      WHEN jet.pt < 15 THEN 14.99
+      WHEN jet.pt > 40 THEN 40.01
       ELSE jet.pt
-    END - 0.125) / 0.25 AS BIGINT) * 0.25 + 0.125
+    END) / 0.25) * 0.25 + 0.125
 ORDER BY x;

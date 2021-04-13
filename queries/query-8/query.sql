@@ -71,18 +71,18 @@ other_max_pt AS (
 
 -- Compute the histogram
 SELECT
-  CAST((
+  FLOOR((
     CASE
-      WHEN pt < 15 THEN 15
-      WHEN pt > 250 THEN 250
+      WHEN pt < 15 THEN 14.99
+      WHEN pt > 250 THEN 250.1
       ELSE pt
-    END - 1.175) / 2.35 AS BIGINT) * 2.35 + 1.175 AS x,
+    END - 0.9) / 2.35) * 2.35 + 2.075 AS x,
   COUNT(*) AS y
 FROM other_max_pt
-GROUP BY CAST((
+GROUP BY FLOOR((
     CASE
-      WHEN pt < 15 THEN 15
-      WHEN pt > 250 THEN 250
+      WHEN pt < 15 THEN 14.99
+      WHEN pt > 250 THEN 250.1
       ELSE pt
-    END - 1.175) / 2.35 AS BIGINT) * 2.35 + 1.175
+    END - 0.9) / 2.35) * 2.35 + 2.075
 ORDER BY x;

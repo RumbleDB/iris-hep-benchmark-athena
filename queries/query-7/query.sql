@@ -21,18 +21,18 @@ WITH matching_jets AS (
 )
 -- Compute the histogram
 SELECT
-  CAST((
+  FLOOR((
     CASE
-      WHEN pt_sum < 15 THEN 15
-      WHEN pt_sum > 200 THEN 200
+      WHEN pt_sum < 15 THEN 14.9
+      WHEN pt_sum > 200 THEN 200.1
       ELSE pt_sum
-    END - 0.925) / 1.85 AS BIGINT) * 1.85 + 0.925 AS x,
+    END - 0.2) / 1.85) * 1.85 + 1.125 AS x,
   COUNT(*) AS y
 FROM matching_jets
-GROUP BY CAST((
+GROUP BY FLOOR((
     CASE
-      WHEN pt_sum < 15 THEN 15
-      WHEN pt_sum > 200 THEN 200
+      WHEN pt_sum < 15 THEN 14.9
+      WHEN pt_sum > 200 THEN 200.1
       ELSE pt_sum
-    END - 0.925) / 1.85 AS BIGINT) * 1.85 + 0.925
+    END - 0.2) / 1.85) * 1.85 + 1.125
 ORDER BY x;

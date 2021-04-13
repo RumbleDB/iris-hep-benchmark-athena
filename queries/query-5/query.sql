@@ -12,18 +12,18 @@ WITH temp AS (
   HAVING COUNT(*) > 0
 )
 SELECT
-  CAST((
+  FLOOR((
     CASE
-      WHEN pt < 0 THEN 0
-      WHEN pt > 2000 THEN 2000
+      WHEN pt < 0 THEN -1
+      WHEN pt > 2000 THEN 2001
       ELSE pt
-    END - 10) / 20 AS BIGINT) * 20 + 10 AS x,
+    END) / 20) * 20 + 10 AS x,
   COUNT(*) AS y
 FROM temp
-GROUP BY CAST((
+GROUP BY FLOOR((
     CASE
-      WHEN pt < 0 THEN 0
-      WHEN pt > 2000 THEN 2000
+      WHEN pt < 0 THEN -1
+      WHEN pt > 2000 THEN 2001
       ELSE pt
-    END - 10) / 20 AS BIGINT) * 20 + 10
+    END) / 20) * 20 + 10
 ORDER BY x;

@@ -92,7 +92,7 @@ def test_query(query_id, pytestconfig):
       df.to_csv(ref_file, index=False)
 
     # Read reference result
-    df_ref = pd.read_csv(ref_file, dtype= {'x': np.float64, 'y': np.int32})
+    df_ref = pd.read_csv(ref_file, dtype= {'x': float, 'y': int})
 
     # Plot histogram
     if pytestconfig.getoption('plot_histogram'):
